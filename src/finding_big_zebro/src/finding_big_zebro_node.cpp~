@@ -1,0 +1,92 @@
+#include <iostream>
+
+#include <ros/ros.h>
+#include <sensor_msgs/Image.h>
+#include <cv_bridge/cv_bridge.h>
+
+//OPENCV
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+#define DBG_WINDOW_NAME "Debug Window"
+
+class motionDetector {
+private:
+  int foo_, bar_;
+  
+  ros::NodeHandle node_;
+
+  ros::Subscriber imageSub_;
+  
+  cv::Mat image_;
+
+  void imageCallback(const sensor_msgs::Image::ConstPtr& msg)
+  {
+    cv_bridge::CvImageConstPtr bridge;
+    try
+      {
+	bridge = cv_bridge::toCvCopy(msg, "bgr8");
+      }
+    catch (cv_bridge::Exception& e)
+      {
+	std::cout << "Failed to transform image-bridge!" << std::endl;
+	  //<< " Error: " <<  e				 \
+	//		  << std::endl;
+      }
+
+    image_ = cv::Mat::zeros(bridge->image.rows,
+			bridge->image.cols,
+		        CV_8UC3);
+    image_ = bridge->image.clone();
+    //bridge->image.copyTo(image_);
+    //foo_ = bridge->image.rows;
+    //bar_ = bridge->image.cols;
+    foo_ = image_.rows;
+    bar_ = image_.cols;
+    
+  }
+  
+public:
+  motionDetector() {
+    imageSub_ = node_.subscribe("/camera/image", 
+				1, 
+				&motionDetector::imageCallback,
+				this);
+
+    //TODO: activate the camera service
+  }
+  
+  void displayImage()
+  {
+    cv::imshow(DBG_WINDOW_NAME, image_);
+  }
+
+  void displayImageInfo()
+  {
+    std::cout << "Rows:\t " << image_.rows		\
+	      << "Cols:\t" << image_.cols << std::endl	\
+      //<< "Type:\t" << image_.type			
+	      << std::endl \
+	      << "Original Rows:\t" << foo_ << std::endl	\
+	      << "Original Cols:\t" << bar_ \
+	      << std::endl;
+  }
+};
+
+int main(int argc, char **argv)
+{
+  ros::init(argc, argv, "finding_big_zebro_node");
+
+  motionDetector detector;
+
+  while(ros::ok())
+    {
+      ros::spinOnce();
+
+      //detector.displayImage();
+      detector.displayImageInfo();
+    }
+  
+  return 0;
+}
