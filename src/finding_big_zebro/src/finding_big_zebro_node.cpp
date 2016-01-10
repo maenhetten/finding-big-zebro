@@ -13,6 +13,8 @@
 #define WAITKEYTIME 30
 
 const cv::Size KERNEL_SIZE = cv::Size( 9, 9);
+const double THRESHOLD = 40;
+const cv::Scalar INDICATOR_COLOR = cv::Scalar(255,0,192);
 
 class motionDetector {
 private:
@@ -22,10 +24,10 @@ private:
 
   ros::Subscriber imageSub_;
     
-  cv::Mat image_, imageOriginal_;
+  cv::Mat image_, imageOriginal_, background_;
   //cv_bridge::CvImage bridge_;
 
-  bool imageCaptured_;
+  bool imageCaptured_, backgroundSet_;
 
   void imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   {
@@ -46,13 +48,19 @@ private:
     //		        CV_8UC3);
     
     imageOriginal_ = bridge->image.clone();
+
+    if(!backgroundSet_)                        // That's the first image (=Background)
+      {
+	setBackground(imageOriginal_.clone());
+      }
+
+    imageCaptured_ = true;                 // Captured flag
+    
     //bridge->image.copyTo(imageOriginal_);
     //foo_ = bridge->image.rows;
     //bar_ = bridge->image.cols;
     foo_ = imageOriginal_.rows;
     bar_ = imageOriginal_.cols;
-
-    imageCaptured_ = true;                        // Captured flag
   }
   
 public:
@@ -63,6 +71,7 @@ public:
 				&motionDetector::imageCallback,
 				this);
     imageCaptured_ = false;
+    backgroundSet_ = false;
 
     
     //TODO: activate the camera service
@@ -104,10 +113,60 @@ public:
 	      << std::endl;
   }
 
+  void setBackground(const cv::Mat &image)
+  {
+    cv::GaussianBlur(image, background_, KERNEL_SIZE, 0, 0);
+    backgroundSet_ = true;
+    std::cout << "Background set!" << std::endl;
+  }
+
   void processImage()
   {
-    std::cout << "Applying Gaussian filter..." << std::endl;
-    cv:: GaussianBlur(imageOriginal_, image_, KERNEL_SIZE, 0,0);
+    if (!imageCaptured_)
+      return;
+    
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
+    
+    cv::GaussianBlur(imageOriginal_, image_, KERNEL_SIZE, 0,0);
+    //std::cout << "Substracting background" << std::endl;
+    image_ = background_ - image_;
+
+    cv::threshold(image_, image_, THRESHOLD, 255, CV_THRESH_BINARY);
+
+    //std::cout << "Matrix type: " << image_.type() << std::endl;
+    cv::Mat imageCopy = image_.clone();
+    cv::findContours(imageCopy, contours,
+		     CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE,
+		     cv::Point(0,0));
+
+    std::cout << "Mystery value:" << contours.size() << std::endl;
+    
+    cv::cvtColor(image_, image_, CV_GRAY2RGB);    // Convert back to color
+
+    std::vector<cv::Point2f> movementCenters(contours.size() ); // Initializing the center point vector
+    
+    if (movementCenters.size() > 0)
+      {
+	//cv::drawContours(image_, contours, -1, INDICATOR_COLOR, 2, 8); // For identifying the contours
+	
+	std::cout << "Contour center points:" << std::endl;
+	float dummy;
+	for (int i=0; i<movementCenters.size(); i++)
+	  {
+	    cv::minEnclosingCircle(contours[i], movementCenters[i], dummy);
+	    
+	    cv::circle(image_, movementCenters[i], 2, INDICATOR_COLOR, -1, 8, 0);
+	    std::cout << "\t" \
+		      << movementCenters[i].x << ","	\
+		      << movementCenters[i].y << std::endl;
+	  }
+	std::cout << std::endl;
+      }
+    else
+      {
+	std::cout << "No contours found!" << std::endl; 
+      }
   }
 };
 
