@@ -1,8 +1,10 @@
 #include <iostream>
+#include <string>
 
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
 #include <cv_bridge/cv_bridge.h>
+#include "std_srvs/Empty.h"
 
 //OPENCV
 #include <opencv2/opencv.hpp>
@@ -12,9 +14,22 @@
 #define DBG_WINDOW_NAME "Debug Window"
 #define WAITKEYTIME 30
 
+#define SCREENSHOT_PATH "/home/pi/finding-big-zebro/screenshots/screenshot.png"
+
+const int DEFAULT_COLS = 640;
+const int DEFAULT_ROWS = 480;
+
 const cv::Size KERNEL_SIZE = cv::Size( 9, 9);
 const double THRESHOLD = 40;
 const cv::Scalar INDICATOR_COLOR = cv::Scalar(255,0,192);
+const cv::Scalar RECTANGLE_COLOR = cv::Scalar(0x99,0x84,0x46);
+const int BACKGROUND_REFRESH_RATE = 5;
+
+const cv::Point RECTANGLE_UL = cv::Point(20,47);
+const cv::Point RECTANGLE_LR = cv::Point(600,433);
+
+const int PLACEMENT_STATE = 0;
+const int DETECTION_STATE = 1;
 
 class motionDetector {
 private:
@@ -23,11 +38,14 @@ private:
   ros::NodeHandle node_;
 
   ros::Subscriber imageSub_;
+
+  ros::ServiceServer saveImageServer_;
     
   cv::Mat image_, imageOriginal_, background_;
   //cv_bridge::CvImage bridge_;
 
-  bool imageCaptured_, backgroundSet_;
+  bool imageCaptured_, backgroundSet_, getScreenshot_;
+  int backgroundIterator_;
 
   void imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   {
@@ -48,19 +66,31 @@ private:
     //		        CV_8UC3);
     
     imageOriginal_ = bridge->image.clone();
+    image_ = imageOriginal_.clone();
 
-    if(!backgroundSet_)                        // That's the first image (=Background)
+    if(!backgroundSet_ ||
+       backgroundIterator_++ >= BACKGROUND_REFRESH_RATE)                        // Updage the background, or set it
       {
 	setBackground(imageOriginal_.clone());
+	backgroundIterator_ = 0;
       }
 
     imageCaptured_ = true;                 // Captured flag
     
-    //bridge->image.copyTo(imageOriginal_);
-    //foo_ = bridge->image.rows;
-    //bar_ = bridge->image.cols;
     foo_ = imageOriginal_.rows;
     bar_ = imageOriginal_.cols;
+  }
+
+  bool saveImageCallback(std_srvs::Empty::Request& request,
+			 std_srvs::Empty::Response& response)
+  {
+    saveImage_();
+    return true;
+  }
+
+  void saveImage_()
+  {
+    getScreenshot_ = true;
   }
   
 public:
@@ -70,10 +100,17 @@ public:
 				1, 
 				&motionDetector::imageCallback,
 				this);
+    
+    saveImageServer_ = node_.advertiseService("motiondetector/save_image",
+					      &motionDetector::saveImageCallback,
+					      this);// &motionDetector::saveImage, this);
+    
     imageCaptured_ = false;
     backgroundSet_ = false;
+    getScreenshot_ = false;
 
-    
+    backgroundIterator_ = 0;
+
     //TODO: activate the camera service
   }
 
@@ -84,15 +121,33 @@ public:
   
   void displayImage()
   {
-    if(image_.rows > 0 && image_.cols > 0 && imageCaptured_)
+    if (!imageCaptured_)
+      {
+	std::cout << "Image wasn't captured. Is the camera running (call camera start service)." << std::endl;
+      }
+    else if(image_.rows > 0 && image_.cols > 0) // Image available
       {
 	// std::cout << "Displaying image..." << std::endl;
 	cv::imshow(DBG_WINDOW_NAME, image_);
 	cv::waitKey(WAITKEYTIME);
+
+	if(getScreenshot_)
+	  {
+	    cv::imwrite(SCREENSHOT_PATH, image_);
+	    
+	    std::cout << "Image saved to:" << std::endl \
+		      << SCREENSHOT_PATH << std::endl;
+
+	    getScreenshot_ = false;
+	  }
+    
+    // TODO (nice to have) not overwriting, time stamp
       }
-    else if (!imageCaptured_)
+    else if (imageOriginal_.rows > 0 && imageOriginal_.cols > 0)
       {
-	std::cout << "Image wasn't captured." << std::endl;
+	std::cout << "Displaying original image..." << std::endl;
+	cv::imshow(DBG_WINDOW_NAME, imageOriginal_);
+	cv::waitKey(WAITKEYTIME);
       }
     else
       {
@@ -117,7 +172,7 @@ public:
   {
     cv::GaussianBlur(image, background_, KERNEL_SIZE, 0, 0);
     backgroundSet_ = true;
-    std::cout << "Background set!" << std::endl;
+    //std::cout << "Background set!" << std::endl;
   }
 
   void processImage()
@@ -140,7 +195,7 @@ public:
 		     CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE,
 		     cv::Point(0,0));
 
-    std::cout << "Mystery value:" << contours.size() << std::endl;
+    //std::cout << "Mystery value:" << contours.size() << std::endl;
     
     cv::cvtColor(image_, image_, CV_GRAY2RGB);    // Convert back to color
 
@@ -150,33 +205,91 @@ public:
       {
 	//cv::drawContours(image_, contours, -1, INDICATOR_COLOR, 2, 8); // For identifying the contours
 	
-	std::cout << "Contour center points:" << std::endl;
+	//std::cout << "Contour center points:" << std::endl;
+
 	float dummy;
 	for (int i=0; i<movementCenters.size(); i++)
 	  {
 	    cv::minEnclosingCircle(contours[i], movementCenters[i], dummy);
 	    
 	    cv::circle(image_, movementCenters[i], 2, INDICATOR_COLOR, -1, 8, 0);
-	    std::cout << "\t" \
+	    /* std::cout << "\t"			\
 		      << movementCenters[i].x << ","	\
-		      << movementCenters[i].y << std::endl;
+		      << movementCenters[i].y << std::endl;*/
 	  }
-	std::cout << std::endl;
+	//std::cout << std::endl;
+	std::cout << "Motion detected!" << std::endl;
       }
     else
       {
-	std::cout << "No contours found!" << std::endl; 
+	//std::cout << "No contours found!" << std::endl; 
       }
+  }
+
+  void drawPlacement()
+  {
+    if (!imageCaptured_)
+	return; // No image recorded or dimensions aren't right.
+	else if (image_.cols < DEFAULT_COLS ||
+		 image_.rows < DEFAULT_ROWS)
+	  {
+	    std::cout << "Image resolution doesn't match for placement verification!" << std::endl;
+	    return;
+	  }
+
+    cv::cvtColor(imageOriginal_, image_, CV_GRAY2RGB); // Convert back to color
+    cv::rectangle(image_, RECTANGLE_UL, RECTANGLE_LR, RECTANGLE_COLOR , 4);
+  }
+
+  ros::NodeHandle getNode()
+  {
+    return node_;
   }
 };
 
+
 int main(int argc, char **argv)
 {
+  int state = -1;
+  while(state == -1)
+    {
+      std::cout << "Select state, please." << DETECTION_STATE << ": Detection (default), " << PLACEMENT_STATE << ": Placement." ;
+      std::cin >> state;
+      if (state == DETECTION_STATE)
+	std::cout << "Detection state set.";
+      else if (state == PLACEMENT_STATE)
+	std::cout << "Detection state set.";
+      else
+	{
+	  std::cout << "Unknown or no state argument given. Default state of detection set." << std::endl;
+	  state = DETECTION_STATE;
+	}
+    }
+  //int state = PLACEMENT_STATE;
+  //int state = DETECTION_STATE;
+  bool placementPrompted = false;
+  
   ros::init(argc, argv, "finding_big_zebro_node");
 
   motionDetector detector;
 
   ros::Rate loop_rate(30);
+
+  //ros::ServiceServer startCameraService = detector.getNode().advertiseService("/camera/start_capture", startCapturing);
+  //  ros::ServiceClient client = detector.getNode().serviceClient<std_srvs::Empty::Request>("/camera/start_capture");
+  // if (client.call(0))
+  //   {
+  //     std::cout << "Camera service called!" << std::endl;
+  //   }
+  // else
+  //   {
+  //     std::cout << "Camera service failed!" << std::endl;
+  //   }
+  
+  std::cout << "Camera started" << std::endl;
+
+  std::cout << "Please place the Testplate in the image as shown and press enter...";
+  
   
   while(ros::ok())
     {
@@ -184,9 +297,26 @@ int main(int argc, char **argv)
       // detector.displayImage();
       ros::spinOnce();
 
-      detector.processImage();
-      detector.displayImage();
-
+      switch(state)
+	{
+	case PLACEMENT_STATE:
+	  if (!placementPrompted && detector.captured())
+	    {
+	      std::cout << "Please place the Testplate in the image as shown and press enter...";
+	      placementPrompted = true;
+	    }
+	  if (detector.captured())
+	    detector.drawPlacement();
+	  detector.displayImage();
+	  break;
+	case DETECTION_STATE:
+	  detector.processImage();
+	  detector.displayImage();
+	  break;
+	default:
+	  break;
+	}
+	  
       loop_rate.sleep();
       //detector.displayImageInfo();
     }
