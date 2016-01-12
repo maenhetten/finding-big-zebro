@@ -12,7 +12,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-//#include "finding_big_zebro/getScreenshot.h"
+#include "finding_big_zebro/getScreenshot.h"
 
 #define DBG_WINDOW_NAME "Debug Window"
 #define WAITKEYTIME 30
@@ -86,12 +86,12 @@ private:
     bar_ = imageOriginal_.cols;
   }
 
-  // bool saveImageCallback(finding_big_zebro::getScreenshot::Request& request,
-  //			 finding_big_zebro::getScreenshot::Response& response)
-  bool saveImageCallback (std_srvs::Empty::Request& request,
-			  std_srvs::Empty::Response& response)
+  bool saveImageCallback(finding_big_zebro::getScreenshot::Request& request,
+  			 finding_big_zebro::getScreenshot::Response& response)
+  //bool saveImageCallback (std_srvs::Empty::Request& request,
+  //			  std_srvs::Empty::Response& response)
   {
-    //    screenshotFilename_ = request.filename;
+    screenshotFilename_ = request.filename;
     getScreenshot_ = true;
     
     return true;

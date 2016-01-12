@@ -67,10 +67,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   std_msgs
+ )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -104,7 +104,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES finding_big_zebro
-  CATKIN_DEPENDS compressed_image_transport roscpp std_msgs cv_bridge std_srv
+  CATKIN_DEPENDS compressed_image_transport roscpp std_msgs cv_bridge std_srv message_runtime
   DEPENDS system_lib opencv2 
 )
 
