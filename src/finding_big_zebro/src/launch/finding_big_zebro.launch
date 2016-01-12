@@ -1,0 +1,14 @@
+<launch>
+
+  <node name="raspicam_raw"
+	pkg="raspicam"
+	type="raspicam_raw_node"
+	args="_width:=1024 _height:=768" />
+  
+  <node name="finding_big_zebro"
+	pkg="finding_big_zebro"
+	type="finding_big_zebro_node"
+	output="screen" />
+  
+</launch>
+

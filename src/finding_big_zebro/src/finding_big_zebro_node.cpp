@@ -5,19 +5,23 @@
 #include <sensor_msgs/Image.h>
 #include <cv_bridge/cv_bridge.h>
 #include "std_srvs/Empty.h"
+#include <std_msgs/String.h>
 
 //OPENCV
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+//#include "finding_big_zebro/getScreenshot.h"
+
 #define DBG_WINDOW_NAME "Debug Window"
 #define WAITKEYTIME 30
 
-#define SCREENSHOT_PATH "/home/pi/finding-big-zebro/screenshots/screenshot.png"
+#define SCREENSHOT_PATH "/home/pi/finding-big-zebro/screenshots/"
+const std::string EXTENSION = ".png";
 
-const int DEFAULT_COLS = 640;
-const int DEFAULT_ROWS = 480;
+const int DEFAULT_COLS = 1024;
+const int DEFAULT_ROWS = 768;
 
 const cv::Size KERNEL_SIZE = cv::Size( 9, 9);
 const double THRESHOLD = 40;
@@ -46,6 +50,7 @@ private:
 
   bool imageCaptured_, backgroundSet_, getScreenshot_;
   int backgroundIterator_;
+  std::string screenshotFilename_;
 
   void imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   {
@@ -81,16 +86,15 @@ private:
     bar_ = imageOriginal_.cols;
   }
 
-  bool saveImageCallback(std_srvs::Empty::Request& request,
-			 std_srvs::Empty::Response& response)
+  // bool saveImageCallback(finding_big_zebro::getScreenshot::Request& request,
+  //			 finding_big_zebro::getScreenshot::Response& response)
+  bool saveImageCallback (std_srvs::Empty::Request& request,
+			  std_srvs::Empty::Response& response)
   {
-    saveImage_();
-    return true;
-  }
-
-  void saveImage_()
-  {
+    //    screenshotFilename_ = request.filename;
     getScreenshot_ = true;
+    
+    return true;
   }
   
 public:
@@ -133,10 +137,22 @@ public:
 
 	if(getScreenshot_)
 	  {
-	    cv::imwrite(SCREENSHOT_PATH, image_);
+	    std::string filePath = SCREENSHOT_PATH;
+
+	    if (screenshotFilename_.empty())
+	      screenshotFilename_ = "screenshot.png"; // Check if a filename is given
+
+	    std::string fileExtension = screenshotFilename_.substr(screenshotFilename_.length() - EXTENSION.length(),
+								   EXTENSION.length());// check the file extension name
+	      //	    if (screenshotFilename_.substr())
+	    std::cout << "File extension = " << std::endl;
+	    
+	    filePath += screenshotFilename_;
+	    
+	    cv::imwrite(filePath, image_);
 	    
 	    std::cout << "Image saved to:" << std::endl \
-		      << SCREENSHOT_PATH << std::endl;
+		      << SCREENSHOT_PATH << screenshotFilename_ << std::endl;
 
 	    getScreenshot_ = false;
 	  }
@@ -237,8 +253,16 @@ public:
 	    return;
 	  }
 
+    int imageWidth = image_.cols, imageHeight = image_.rows;
+    int placementRadius;
+    cv::Point placementCenter;
+
+    placementCenter = cv::Point(image_.cols/2,image_.rows/2);
+    placementRadius = image_.cols/6;
+
     cv::cvtColor(imageOriginal_, image_, CV_GRAY2RGB); // Convert back to color
-    cv::rectangle(image_, RECTANGLE_UL, RECTANGLE_LR, RECTANGLE_COLOR , 4);
+    
+    cv::circle(image_, placementCenter, placementRadius, RECTANGLE_COLOR, 4);
   }
 
   ros::NodeHandle getNode()
@@ -275,16 +299,16 @@ int main(int argc, char **argv)
 
   ros::Rate loop_rate(30);
 
-  //ros::ServiceServer startCameraService = detector.getNode().advertiseService("/camera/start_capture", startCapturing);
-  //  ros::ServiceClient client = detector.getNode().serviceClient<std_srvs::Empty::Request>("/camera/start_capture");
-  // if (client.call(0))
-  //   {
-  //     std::cout << "Camera service called!" << std::endl;
-  //   }
-  // else
-  //   {
-  //     std::cout << "Camera service failed!" << std::endl;
-  //   }
+  ros::ServiceClient client = detector.getNode().serviceClient<std_srvs::Empty::Request>("/camera/start_capture");
+
+  {
+    std_srvs::Empty::Request dummyReq;
+    std_srvs::Empty::Response dummyRes;
+    if (client.call<std_srvs::Empty::Request, std_srvs::Empty::Response>(dummyReq, dummyRes))
+	std::cout << "Camera service called!" << std::endl;
+    else
+	std::cout << "Camera service failed!" << std::endl;
+  }
   
   std::cout << "Camera started" << std::endl;
 
