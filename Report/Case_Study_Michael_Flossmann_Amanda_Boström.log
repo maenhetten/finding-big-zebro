@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.10.10)  14 DEC 2015 12:55
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.10.10)  15 JAN 2016 15:30
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -577,9 +577,6 @@ LaTeX Info: Redefining \\ on input line 3056.
 runsystem(mkdir -p "_minted-Case_Study_Michael_Flossmann_Amanda_Boström")...ex
 ecuted.
 
-runsystem(pygmentize -S default -f latex -P commandprefix=PYGdefault > "_minted
--Case_Study_Michael_Flossmann_Amanda_Boström/default.pygstyle")...executed.
-
 
 (./_minted-Case_Study_Michael_Flossmann_Amanda_Boström/default.pygstyle)
 (/usr/share/texlive/texmf-dist/tex/latex/geometry/geometry.sty
@@ -607,7 +604,7 @@ runsystem(rm "Case_Study_Michael_Flossmann_Amanda_Boström.aex")...executed.
 LaTeX Warning: Unused global option(s):
     [singlespace].
 
-No file Case_Study_Michael_Flossmann_Amanda_Boström.aux.
+(./Case_Study_Michael_Flossmann_Amanda_Boström.aux)
 \openout1 = `Case_Study_Michael_Flossmann_Amanda_Boström.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
@@ -626,6 +623,7 @@ LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 23.
 LaTeX Font Info:    ... okay on input line 23.
 \AtBeginShipoutBox=\box35
 Package hyperref Info: Link coloring OFF on input line 23.
+
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
 
@@ -637,6 +635,9 @@ Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
 LaTeX Info: Redefining \ref on input line 23.
 LaTeX Info: Redefining \pageref on input line 23.
 LaTeX Info: Redefining \nameref on input line 23.
+
+(./Case_Study_Michael_Flossmann_Amanda_Boström.out)
+(./Case_Study_Michael_Flossmann_Amanda_Boström.out)
 \@outlinefile=\write6
 \openout6 = `Case_Study_Michael_Flossmann_Amanda_Boström.out'.
 
@@ -690,11 +691,6 @@ Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1358.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1359.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1360.
 )
-runsystem(pygmentize -S default -f latex -P commandprefix=PYG > "_minted-Case_S
-tudy_Michael_Flossmann_Amanda_Boström/default-pyg-prefix.pygstyle")...executed
-.
-
-
 (./_minted-Case_Study_Michael_Flossmann_Amanda_Boström/default-pyg-prefix.pygs
 tyle)
 *geometry* driver: auto-detecting
@@ -740,44 +736,45 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 25.
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 26.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 35.
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
+File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/bx/n' in size <12> not available
+(Font)              Font shape `OMS/cmsy/b/n' tried instead on input line 35.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 37.
  [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 26.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 37.
 
 (./Case_Study_Michael_Flossmann_Amanda_Boström.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 26.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 26.
-
-
-Package rerunfilecheck Warning: File `Case_Study_Michael_Flossmann_Amanda_Bostr
-öm.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `Case_Study_Michael_Flossmann_Amanda
-_Boström.out':
-(rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  D41D8CD98F00B204E9800998ECF8427E;0.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 26.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 37.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 37.
+Package rerunfilecheck Info: File `Case_Study_Michael_Flossmann_Amanda_Boström
+.out' has not changed.
+(rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 37.
  ) 
 Here is how much of TeX's memory you used:
- 10507 strings out of 494985
- 163733 string characters out of 6180355
- 286112 words of memory out of 5000000
- 13595 multiletter control sequences out of 15000+600000
- 8752 words of font info for 34 fonts, out of 8000000 for 9000
+ 10543 strings out of 494985
+ 164428 string characters out of 6180355
+ 287381 words of memory out of 5000000
+ 13613 multiletter control sequences out of 15000+600000
+ 9919 words of font info for 38 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
  36i,7n,38p,968b,328s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr
-/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/
-texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb>
-Output written on Case_Study_Michael_Flossmann_Amanda_Boström.pdf (1 page, 310
-76 bytes).
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbsy10.pfb></u
+sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/sha
+re/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texl
+ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/tex
+mf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb>
+Output written on Case_Study_Michael_Flossmann_Amanda_Boström.pdf (1 page, 515
+11 bytes).
 PDF statistics:
- 25 PDF objects out of 1000 (max. 8388607)
- 18 compressed objects within 1 object stream
- 2 named destinations out of 1000 (max. 500000)
+ 43 PDF objects out of 1000 (max. 8388607)
+ 34 compressed objects within 1 object stream
+ 10 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
