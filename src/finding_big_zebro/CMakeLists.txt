@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   message_generation
+  dynamic_reconfigure
 )
 
 ## System dependencies are found with CMake's conventions
@@ -87,10 +88,9 @@ find_package(catkin REQUIRED COMPONENTS
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+ generate_dynamic_reconfigure_options(
+   cfg/imageParameters.cfg
+ )
 
 ###################################
 ## catkin specific configuration ##
@@ -139,6 +139,9 @@ add_executable(finding_big_zebro_node src/finding_big_zebro_node.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(finding_big_zebro_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+# make sure configure headers are built before any node using them
+add_dependencies(finding_big_zebro_node ${PROJECT_NAME}_gencfg)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(finding_big_zebro_node

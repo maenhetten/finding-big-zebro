@@ -7,6 +7,9 @@
 #include "std_srvs/Empty.h"
 #include <std_msgs/String.h>
 
+#include <dynamic_reconfigure/server.h>
+#include <finding_big_zebro/imageParametersConfig.h>
+
 //OPENCV
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
@@ -23,14 +26,17 @@ const std::string EXTENSION = ".png";
 const int DEFAULT_COLS = 1024;
 const int DEFAULT_ROWS = 768;
 
-const cv::Size KERNEL_SIZE = cv::Size( 9, 9);
-const double THRESHOLD = 40;
+//const cv::Size KERNEL_SIZE = cv::Size( 9, 9);
+static int KERNEL_SIZE = 9;
+static double GAUSS_SIGMA = 0.5;
+static double THRESHOLD = 75; //const
 const cv::Scalar INDICATOR_COLOR = cv::Scalar(255,0,192);
 const cv::Scalar RECTANGLE_COLOR = cv::Scalar(0x99,0x84,0x46);
 const int BACKGROUND_REFRESH_RATE = 5;
 
 const cv::Point RECTANGLE_UL = cv::Point(20,47);
 const cv::Point RECTANGLE_LR = cv::Point(600,433);
+const double DEFAULT_SQUARESIZE = 0.4;
 
 const int PLACEMENT_STATE = 0;
 const int DETECTION_STATE = 1;
@@ -44,11 +50,17 @@ private:
   ros::Subscriber imageSub_;
 
   ros::ServiceServer saveImageServer_;
+
+  ros::ServiceServer switchStateServer_;
+
+  dynamic_reconfigure::Server<finding_big_zebro::imageParametersConfig> imageParametersServer_;
+  dynamic_reconfigure::Server<finding_big_zebro::imageParametersConfig>::CallbackType imageParameterCallback_;
     
   cv::Mat image_, imageOriginal_, background_;
+  double relativeSquaresize_;
   //cv_bridge::CvImage bridge_;
 
-  bool imageCaptured_, backgroundSet_, getScreenshot_;
+  bool imageCaptured_, backgroundSet_, getScreenshot_, initializePlacement_;
   int backgroundIterator_;
   std::string screenshotFilename_;
 
@@ -96,10 +108,31 @@ private:
     
     return true;
   }
+
+  bool switchStateCallback(std_srvs::Empty::Request& request,
+			   std_srvs::Empty::Response& response)
+  {
+    switchState();
+    
+    return true;
+  }
+
+  void parametersCallback(finding_big_zebro::imageParametersConfig &config, uint32_t level)
+  {
+    THRESHOLD = config.threshold_value;
+    relativeSquaresize_ = config.relative_squareSize;
+    applyBlur = config.gaussian_blur;
+    applyThreshold = config.threshold;
+    applyContours = config.find_contours;
+    KERNEL_SIZE = config.gaussian_kernel;
+    GAUSS_SIGMA = config.gaussian_sigma;
+  }
   
 public:
-  
-  motionDetector() {
+
+  bool applyBlur, applyThreshold, applyContours;
+
+  motionDetector(bool placementState) {
     imageSub_ = node_.subscribe("/camera/image", 
 				1, 
 				&motionDetector::imageCallback,
@@ -108,14 +141,42 @@ public:
     saveImageServer_ = node_.advertiseService("motiondetector/save_image",
 					      &motionDetector::saveImageCallback,
 					      this);// &motionDetector::saveImage, this);
+
+    switchStateServer_ = node_.advertiseService("finding_big_zebro/switch_state",
+						&motionDetector::switchStateCallback,
+						this);
+
+    imageParameterCallback_ = boost::bind(&motionDetector::parametersCallback, this, _1, _2);
+    imageParametersServer_.setCallback(imageParameterCallback_);
     
     imageCaptured_ = false;
     backgroundSet_ = false;
     getScreenshot_ = false;
 
+    applyBlur = true;
+    applyThreshold = true;
+    applyContours = true;
+
     backgroundIterator_ = 0;
 
+    relativeSquaresize_ = DEFAULT_SQUARESIZE;
+
+    initializePlacement_ = false;
+
     //TODO: activate the camera service
+  }
+
+  void switchState()
+  {
+    initializePlacement_ = !initializePlacement_;
+  }
+
+  int getState()
+  {
+    if (initializePlacement_)
+      return PLACEMENT_STATE;
+    else
+      return DETECTION_STATE;
   }
 
   bool captured()
@@ -186,7 +247,8 @@ public:
 
   void setBackground(const cv::Mat &image)
   {
-    cv::GaussianBlur(image, background_, KERNEL_SIZE, 0, 0);
+    int kernelSize = KERNEL_SIZE - (KERNEL_SIZE % 2) + 1;
+    cv::GaussianBlur(image, background_, cv::Point(kernelSize, kernelSize), GAUSS_SIGMA, 0);
     backgroundSet_ = true;
     //std::cout << "Background set!" << std::endl;
   }
@@ -198,20 +260,53 @@ public:
     
     std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Vec4i> hierarchy;
-    
-    cv::GaussianBlur(imageOriginal_, image_, KERNEL_SIZE, 0,0);
-    //std::cout << "Substracting background" << std::endl;
-    image_ = background_ - image_;
 
-    cv::threshold(image_, image_, THRESHOLD, 255, CV_THRESH_BINARY);
+    int squareSize = imageOriginal_.cols*relativeSquaresize_; // Square size for the mask
+    cv::Rect croppingRectangle(cv::Point((imageOriginal_.cols - squareSize)/2,
+					 (imageOriginal_.rows - squareSize)/2),
+			       cv::Point((imageOriginal_.cols + squareSize)/2,
+					 (imageOriginal_.rows + squareSize)/2));
+    cv::Mat imageMask = cv::Mat::zeros(imageOriginal_.rows, imageOriginal_.cols, imageOriginal_.type());
+
+    // cv::rectangle(imageMask,
+    // 		  maskUpperLeft, maskLowerRight,
+    // 		  cv::Scalar(255),
+    // 		  -1);
+
+    //imageOriginal_.copyTo(image_, imageMask);
+    //imageMask.copyTo(image_);
+    
+    image_ = imageOriginal_(cv::Rect((imageOriginal_.cols - squareSize)/2,
+				     (imageOriginal_.rows - squareSize)/2,
+				     squareSize,
+				     squareSize)); // Crop the image to rectangle of interest.
+
+    if (applyBlur)
+      {
+	int kernelSize = KERNEL_SIZE - (KERNEL_SIZE % 2) + 1;
+	cv::GaussianBlur(image_, image_, cv::Size(kernelSize,kernelSize), GAUSS_SIGMA,0);
+      }
+    
+    //std::cout << "Substracting background" << std::endl;
+    
+    //image_ = background_ - image_;
+    //image_ = imageMask * image_;
+
+    if (applyThreshold)
+      cv::threshold(image_, image_, THRESHOLD, 255, CV_THRESH_BINARY);
 
     //std::cout << "Matrix type: " << image_.type() << std::endl;
     cv::Mat imageCopy = image_.clone();
-    cv::findContours(imageCopy, contours,
-		     CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE,
-		     cv::Point(0,0));
+
+    if (applyContours)
+      cv::findContours(imageCopy,
+		       contours,
+		       hierarchy,
+		       CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, // Tree has to be retreived in order to analyze the hierarchy properly. Also see http://docs.opencv.org/master/d9d8b/tutorial_py_contours_hierarchy.html
+		       cv::Point(0,0)); 
 
     //std::cout << "Mystery value:" << contours.size() << std::endl;
+
     
     cv::cvtColor(image_, image_, CV_GRAY2RGB);    // Convert back to color
 
@@ -219,30 +314,53 @@ public:
     
     if (movementCenters.size() > 0)
       {
-	//cv::drawContours(image_, contours, -1, INDICATOR_COLOR, 2, 8); // For identifying the contours
+    	//cv::drawContours(image_, contours, -1, INDICATOR_COLOR, 2, 8); // For identifying the contours
 	
-	//std::cout << "Contour center points:" << std::endl;
+    	float dummy;
+	std::vector<int> specimenCandidate; // holds the index of contours which are candidates for the observed candidate
+	
+    	for (int i=0; i<movementCenters.size(); i++) // go through all found contours and match the wanted hierarchical pattern.
+    	  {
+	    if ((hierarchy[i][3] == 2) && // contour is surrounded by 2 contours above (one black circle, ideally)
+		(hierarchy[i][2] ==-1))   // contour doesn't have a child contour
+	      {
+		specimenCandidate.push_back(i);
+		cv::minEnclosingCircle(contours[i], movementCenters[i], dummy);
+		cv::circle(image_, movementCenters[i], 2, INDICATOR_COLOR, -1, 8, 0);
+		// cv::drawContours(image_, contours, -1, INDICATOR_COLOR, 2, 8); // For identifying the contours
+	      }
 
-	float dummy;
-	for (int i=0; i<movementCenters.size(); i++)
-	  {
-	    cv::minEnclosingCircle(contours[i], movementCenters[i], dummy);
-	    
-	    cv::circle(image_, movementCenters[i], 2, INDICATOR_COLOR, -1, 8, 0);
-	    /* std::cout << "\t"			\
-		      << movementCenters[i].x << ","	\
-		      << movementCenters[i].y << std::endl;*/
+	    // std::ostringstream hierarchystring;
+	    // hierarchystring << hierarchy[i][0] << "," << std::endl \
+	    // 		    << hierarchy[i][1] << "," << std::endl \
+	    // 		    << hierarchy[i][2] << "," << std::endl \
+	    // 		    << hierarchy[i][3] << std::endl;
+	    // cv::putText(image_,
+	    // 		hierarchystring.str(),
+	    // 		movementCenters[i],
+	    // 		CV_FONT_HERSHEY_SIMPLEX,
+	    // 		0.4,
+	    // 		INDICATOR_COLOR);
 	  }
-	//std::cout << std::endl;
-	std::cout << "Motion detected!" << std::endl;
-      }
+
+	if (specimenCandidate.size() == 1)
+	  {
+	    std::cout << "Single specimen detected at:" << std::endl << "\t" \
+		      << movementCenters[specimenCandidate.front()].x << "," \
+		      << movementCenters[specimenCandidate.front()].y << std::endl;
+	  }
+	else if (specimenCandidate.size() > 1)
+	  std::cout << specimenCandidate.size() << "candidates! Try adjusting the threshold value." << std::endl;
+	else
+	  std::cout << "No specimen candidate! Try adjusting the threshold value." << std::endl;
+      } 
     else
       {
-	//std::cout << "No contours found!" << std::endl; 
-      }
+    	std::cout << "No contours found!" << std::endl; 
+      } 
   }
 
-  void drawPlacement()
+      void drawPlacement() // TODO: functioni
   {
     if (!imageCaptured_)
 	return; // No image recorded or dimensions aren't right.
@@ -253,16 +371,22 @@ public:
 	    return;
 	  }
 
-    int imageWidth = image_.cols, imageHeight = image_.rows;
     int placementRadius;
+    int squareSize = imageOriginal_.cols*relativeSquaresize_;
     cv::Point placementCenter;
 
-    placementCenter = cv::Point(image_.cols/2,image_.rows/2);
-    placementRadius = image_.cols/6;
+    placementCenter = cv::Point(imageOriginal_.cols/2,imageOriginal_.rows/2);
+    placementRadius = imageOriginal_.cols*relativeSquaresize_/2;
+
+    cv::Rect placementRectangle = cv::Rect((imageOriginal_.cols - squareSize)/2,
+					   (imageOriginal_.rows - squareSize)/2,
+					   squareSize,
+					   squareSize);
 
     cv::cvtColor(imageOriginal_, image_, CV_GRAY2RGB); // Convert back to color
     
     cv::circle(image_, placementCenter, placementRadius, RECTANGLE_COLOR, 4);
+    cv::rectangle(image_, placementRectangle, RECTANGLE_COLOR, 4);
   }
 
   ros::NodeHandle getNode()
@@ -274,6 +398,9 @@ public:
 
 int main(int argc, char **argv)
 {
+
+  //std::cout << "Threshold: " << std::endl;
+  //  std::cin >> THRESHOLD;
   int state = -1;
   while(state == -1)
     {
@@ -295,7 +422,7 @@ int main(int argc, char **argv)
   
   ros::init(argc, argv, "finding_big_zebro_node");
 
-  motionDetector detector;
+  motionDetector detector(state);
 
   ros::Rate loop_rate(30);
 
@@ -321,7 +448,7 @@ int main(int argc, char **argv)
       // detector.displayImage();
       ros::spinOnce();
 
-      switch(state)
+      switch(detector.getState())
 	{
 	case PLACEMENT_STATE:
 	  if (!placementPrompted && detector.captured())
