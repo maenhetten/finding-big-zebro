@@ -23,11 +23,17 @@
 \begin{document}
 \maketitle
 
+\begin{center}
+  \emph{All code for this exercise can be found at \\ \url{https://github.com/maenhetten/finding-big-zebro}}
+\end{center}
+
 \section*{Introduction}
 
 The following report recounts the work put into and results acquired from a motion detection node, running on a ROS system on the Raspberry Pi 2 Model B, using a Raspberry Pi Camera module.\\
 The objective of the case study was to use image subtraction and filtering to obtain motion detection in the camera image, publishing on a topic whenever motion was detected. \\
 The motion detection system was tested on zebrafish larvae in a lab setting, tracking their swimming patterns.
+
+
 
 \section{Preparation}
 \subsection{Hardware}
@@ -181,7 +187,7 @@ The single larvae was detected by the system, and was able to track its movement
 
 \section{Future development}
 Some issues are left unsolved for the project, in order to deploy it as an actual research tool for a typical laboratory environment. Given more time these could be solved and the tool further developed for user friendliness.\\ 
-Among these is the issue of the larvae blending in with the borders of the placement circle when swimming too close to them. This makes the system consider it a part of the circle.\\
+Among these is the issue of the larvae blending in with the borders of the placement circle when swimming too close to them. This makes the system consider it a part of the circle. This could be solved by background subtraction. Specifically, storing one background image if the algorithm found the specimen and removing the place where the specimen was found in the background image.\\
 Another issue left to solve is that the positions recorded need to be connected to a timestamp, in order to calculate the speeds of the larvae, which is a relevant piece of information for the biologist researching the zebrafish.   
 
 

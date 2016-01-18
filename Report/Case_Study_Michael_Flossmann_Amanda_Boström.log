@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.10.10)  18 JAN 2016 23:13
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.10.10)  19 JAN 2016 00:03
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -748,136 +748,135 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 25.
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Underfull \hbox (badness 10000) in paragraph at lines 39--43
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 51--53
+Underfull \hbox (badness 10000) in paragraph at lines 45--49
 
  []
 
 [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-<without_filter.png, id=74, 1027.84pt x 770.88pt>
-File: without_filter.png Graphic file (type png)
- <use without_filter.png>
-Package pdftex.def Info: without_filter.png used on input line 60.
-(pdftex.def)             Requested size: 152.27972pt x 114.20372pt.
-
-<gaussian_blur.png, id=75, 1027.84pt x 770.88pt>
-File: gaussian_blur.png Graphic file (type png)
- <use gaussian_blur.png>
-Package pdftex.def Info: gaussian_blur.png used on input line 65.
-(pdftex.def)             Requested size: 152.27972pt x 114.20372pt.
-
-Underfull \hbox (badness 10000) in paragraph at lines 75--77
+Underfull \hbox (badness 10000) in paragraph at lines 57--59
 
  []
 
-<image_raw.png, id=76, 403.5075pt x 403.5075pt>
+<without_filter.png, id=77, 1027.84pt x 770.88pt>
+File: without_filter.png Graphic file (type png)
+ <use without_filter.png>
+Package pdftex.def Info: without_filter.png used on input line 66.
+(pdftex.def)             Requested size: 152.27972pt x 114.20372pt.
+
+<gaussian_blur.png, id=78, 1027.84pt x 770.88pt>
+File: gaussian_blur.png Graphic file (type png)
+ <use gaussian_blur.png>
+Package pdftex.def Info: gaussian_blur.png used on input line 71.
+(pdftex.def)             Requested size: 152.27972pt x 114.20372pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 81--83
+
+ []
+
+<image_raw.png, id=79, 403.5075pt x 403.5075pt>
 File: image_raw.png Graphic file (type png)
  <use image_raw.png>
-Package pdftex.def Info: image_raw.png used on input line 81.
+Package pdftex.def Info: image_raw.png used on input line 87.
 (pdftex.def)             Requested size: 152.27972pt x 152.28159pt.
 
-<image_threshold.png, id=77, 403.5075pt x 403.5075pt>
+<image_threshold.png, id=80, 403.5075pt x 403.5075pt>
 File: image_threshold.png Graphic file (type png)
 
 <use image_threshold.png>
-Package pdftex.def Info: image_threshold.png used on input line 86.
+Package pdftex.def Info: image_threshold.png used on input line 92.
 (pdftex.def)             Requested size: 152.27972pt x 152.28159pt.
  [2 <./without_filter.png (PNG copy)> <./gaussian_blur.png (PNG copy)>]
-Underfull \hbox (badness 10000) in paragraph at lines 95--97
+Underfull \hbox (badness 10000) in paragraph at lines 101--103
 
  []
 
-<contour_centers.png, id=85, 1027.84pt x 770.88pt>
+<contour_centers.png, id=88, 1027.84pt x 770.88pt>
 File: contour_centers.png Graphic file (type png)
  <use contour_centers.png>
-Package pdftex.def Info: contour_centers.png used on input line 101.
+Package pdftex.def Info: contour_centers.png used on input line 107.
 (pdftex.def)             Requested size: 152.27972pt x 114.20372pt.
 
-<contour_detection.png, id=86, 642.4pt x 481.8pt>
+<contour_detection.png, id=89, 642.4pt x 481.8pt>
 File: contour_detection.png Graphic file (type png)
  <use contour_detection.png>
-Package pdftex.def Info: contour_detection.png used on input line 106.
+Package pdftex.def Info: contour_detection.png used on input line 112.
 (pdftex.def)             Requested size: 152.27972pt x 114.20813pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--116
+Underfull \hbox (badness 10000) in paragraph at lines 121--122
 
  []
 
-<placement_circle.png, id=88, 1027.84pt x 770.88pt>
+<placement_circle.png, id=91, 1027.84pt x 770.88pt>
 File: placement_circle.png Graphic file (type png)
  <use placement_circle.png>
-Package pdftex.def Info: placement_circle.png used on input line 119.
+Package pdftex.def Info: placement_circle.png used on input line 125.
 (pdftex.def)             Requested size: 304.55945pt x 228.41922pt.
 
 [3 <./image_raw.png (PNG copy)> <./image_threshold.png (PNG copy)> <./contour_c
 enters.png (PNG copy)> <./contour_detection.png (PNG copy)>]
-Underfull \hbox (badness 10000) in paragraph at lines 125--137
+Underfull \hbox (badness 10000) in paragraph at lines 131--143
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--137
+Underfull \hbox (badness 10000) in paragraph at lines 131--143
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 139--140
+Underfull \hbox (badness 10000) in paragraph at lines 145--146
 
  []
 
-<zebro.jpg, id=97, 1311.90125pt x 1084.05pt>
+<zebro.jpg, id=100, 1311.90125pt x 1084.05pt>
 File: zebro.jpg Graphic file (type jpg)
  <use zebro.jpg>
-Package pdftex.def Info: zebro.jpg used on input line 143.
+Package pdftex.def Info: zebro.jpg used on input line 149.
 (pdftex.def)             Requested size: 228.42104pt x 188.73566pt.
- [4 <./placement_circle.png (PNG copy)>] <awesome.jpg, id=104, 2999.205pt x 399
+ [4 <./placement_circle.png (PNG copy)>] <awesome.jpg, id=107, 2999.205pt x 399
 7.93625pt>
 File: awesome.jpg Graphic file (type jpg)
 
 <use awesome.jpg>
-Package pdftex.def Info: awesome.jpg used on input line 153.
+Package pdftex.def Info: awesome.jpg used on input line 159.
 (pdftex.def)             Requested size: 190.34894pt x 253.71362pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 159--160
+Underfull \hbox (badness 10000) in paragraph at lines 165--166
 
  []
 
-<fish_raw.png, id=105, 261.97874pt x 261.97874pt>
+<fish_raw.png, id=108, 261.97874pt x 261.97874pt>
 File: fish_raw.png Graphic file (type png)
  <use fish_raw.png>
-Package pdftex.def Info: fish_raw.png used on input line 164.
+Package pdftex.def Info: fish_raw.png used on input line 170.
 (pdftex.def)             Requested size: 91.36874pt x 91.36613pt.
 
-<fish_threshold_unblurred.png, id=106, 261.97874pt x 261.97874pt>
+<fish_threshold_unblurred.png, id=109, 261.97874pt x 261.97874pt>
 File: fish_threshold_unblurred.png Graphic file (type png)
 
 <use fish_threshold_unblurred.png>
-Package pdftex.def Info: fish_threshold_unblurred.png used on input line 169.
+Package pdftex.def Info: fish_threshold_unblurred.png used on input line 175.
 (pdftex.def)             Requested size: 91.36874pt x 91.36613pt.
 
 
-LaTeX Warning: File ` fish_detection.png' not found on input line 174.
+LaTeX Warning: File ` fish_detection.png' not found on input line 180.
 
-< fish_detection.png, id=107, 261.97874pt x 261.97874pt>
+< fish_detection.png, id=110, 261.97874pt x 261.97874pt>
 File:  fish_detection.png Graphic file (type png)
 
 <use  fish_detection.png>
-Package pdftex.def Info:  fish_detection.png used on input line 174.
+Package pdftex.def Info:  fish_detection.png used on input line 180.
 (pdftex.def)             Requested size: 91.36874pt x 91.36613pt.
  [5 <./zebro.jpg> <./awesome.jpg>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 189.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 195.
  [6 <./fish_raw.png (PNG copy)> <./fish_threshold_unblurred.png (PNG copy)> <./
  fish_detection.png (PNG copy)>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 189.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 195.
  (./Case_Study_Michael_Flossmann_Amanda_Boström.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 189.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 189.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 195.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 195.
 Package rerunfilecheck Info: File `Case_Study_Michael_Flossmann_Amanda_Boström
 .out' has not changed.
 (rerunfilecheck)             Checksum: 958B9804D12AB7A131C54A08F6C4FE3A;912.
@@ -885,26 +884,28 @@ Package rerunfilecheck Info: File `Case_Study_Michael_Flossmann_Amanda_Boström
 
 LaTeX Warning: There were multiply-defined labels.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 189.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 195.
  ) 
 Here is how much of TeX's memory you used:
- 10659 strings out of 494985
- 166447 string characters out of 6180355
+ 10673 strings out of 494985
+ 166597 string characters out of 6180355
  291561 words of memory out of 5000000
- 13698 multiletter control sequences out of 15000+600000
- 9963 words of font info for 38 fonts, out of 8000000 for 9000
+ 13708 multiletter control sequences out of 15000+600000
+ 12176 words of font info for 48 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
  36i,8n,38p,968b,481s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share
-/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texliv
-e/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf
--dist/fonts/type1/public/amsfonts/cm/cmr9.pfb>
-Output written on Case_Study_Michael_Flossmann_Amanda_Boström.pdf (6 pages, 74
-82792 bytes).
+r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmitt10.pfb></usr/sha
+re/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texl
+ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/tex
+mf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/t
+ype1/public/amsfonts/cm/cmti10.pfb>
+Output written on Case_Study_Michael_Flossmann_Amanda_Boström.pdf (6 pages, 75
+00660 bytes).
 PDF statistics:
- 144 PDF objects out of 1000 (max. 8388607)
- 117 compressed objects within 2 object streams
+ 153 PDF objects out of 1000 (max. 8388607)
+ 124 compressed objects within 2 object streams
  30 named destinations out of 1000 (max. 500000)
  181 words of extra memory for PDF output out of 10000 (max. 10000000)
 
