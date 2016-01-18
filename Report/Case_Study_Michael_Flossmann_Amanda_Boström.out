@@ -1,0 +1,15 @@
+\BOOKMARK [1][-]{section.1}{Preparation}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Hardware}{section.1}% 2
+\BOOKMARK [2][-]{subsection.1.2}{Software Installation}{section.1}% 3
+\BOOKMARK [2][-]{subsection.1.3}{Plan of action}{section.1}% 4
+\BOOKMARK [1][-]{section.2}{Implementation}{}% 5
+\BOOKMARK [2][-]{subsection.2.1}{Debug window}{section.2}% 6
+\BOOKMARK [2][-]{subsection.2.2}{Filtering}{section.2}% 7
+\BOOKMARK [2][-]{subsection.2.3}{Thresholding}{section.2}% 8
+\BOOKMARK [2][-]{subsection.2.4}{Identifying contours}{section.2}% 9
+\BOOKMARK [2][-]{subsection.2.5}{Placement indicator}{section.2}% 10
+\BOOKMARK [2][-]{subsection.2.6}{Dynamic reconfiguration}{section.2}% 11
+\BOOKMARK [1][-]{section.3}{Testing with live specimen}{}% 12
+\BOOKMARK [2][-]{subsection.3.1}{The setup}{section.3}% 13
+\BOOKMARK [2][-]{subsection.3.2}{The results}{section.3}% 14
+\BOOKMARK [1][-]{section.4}{Future development}{}% 15
