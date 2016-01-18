@@ -6,6 +6,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include "std_srvs/Empty.h"
 #include <std_msgs/String.h>
+#include <geometry_msgs/Point.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <finding_big_zebro/imageParametersConfig.h>
@@ -28,11 +29,13 @@ const int DEFAULT_ROWS = 768;
 
 //const cv::Size KERNEL_SIZE = cv::Size( 9, 9);
 static int KERNEL_SIZE = 9;
-static double GAUSS_SIGMA = 0.5;
+static double GAUSS_SIGMA = 25;
 static double THRESHOLD = 75; //const
 const cv::Scalar INDICATOR_COLOR = cv::Scalar(255,0,192);
 const cv::Scalar RECTANGLE_COLOR = cv::Scalar(0x99,0x84,0x46);
 const int BACKGROUND_REFRESH_RATE = 5;
+static float SPECIMEN_SIZE_MAX = 0.05;
+static float SPECIMEN_SIZE_MIN = 0.025;
 
 const cv::Point RECTANGLE_UL = cv::Point(20,47);
 const cv::Point RECTANGLE_LR = cv::Point(600,433);
@@ -52,6 +55,9 @@ private:
   ros::ServiceServer saveImageServer_;
 
   ros::ServiceServer switchStateServer_;
+
+  ros::Publisher imagePub_;
+  ros::Publisher positionPub_;
 
   dynamic_reconfigure::Server<finding_big_zebro::imageParametersConfig> imageParametersServer_;
   dynamic_reconfigure::Server<finding_big_zebro::imageParametersConfig>::CallbackType imageParameterCallback_;
@@ -126,6 +132,8 @@ private:
     applyContours = config.find_contours;
     KERNEL_SIZE = config.gaussian_kernel;
     GAUSS_SIGMA = config.gaussian_sigma;
+    SPECIMEN_SIZE_MAX = config.specimen_size_max;
+    SPECIMEN_SIZE_MIN = config.specimen_size_min;
   }
   
 public:
@@ -138,13 +146,16 @@ public:
 				&motionDetector::imageCallback,
 				this);
     
-    saveImageServer_ = node_.advertiseService("motiondetector/save_image",
+    saveImageServer_ = node_.advertiseService("finding_big_zebro/save_image",
 					      &motionDetector::saveImageCallback,
 					      this);// &motionDetector::saveImage, this);
 
     switchStateServer_ = node_.advertiseService("finding_big_zebro/switch_state",
 						&motionDetector::switchStateCallback,
 						this);
+
+    imagePub_ = node_.advertise<sensor_msgs::Image>("finding_big_zebro/image",5);
+    positionPub_ = node_.advertise<geometry_msgs::Point>("finding_big_zebro/position",5);
 
     imageParameterCallback_ = boost::bind(&motionDetector::parametersCallback, this, _1, _2);
     imageParametersServer_.setCallback(imageParameterCallback_);
@@ -266,7 +277,6 @@ public:
 					 (imageOriginal_.rows - squareSize)/2),
 			       cv::Point((imageOriginal_.cols + squareSize)/2,
 					 (imageOriginal_.rows + squareSize)/2));
-    cv::Mat imageMask = cv::Mat::zeros(imageOriginal_.rows, imageOriginal_.cols, imageOriginal_.type());
 
     // cv::rectangle(imageMask,
     // 		  maskUpperLeft, maskLowerRight,
@@ -280,6 +290,14 @@ public:
 				     (imageOriginal_.rows - squareSize)/2,
 				     squareSize,
 				     squareSize)); // Crop the image to rectangle of interest.
+    cv::Mat imageMask = cv::Mat::zeros(image_.cols, image_.rows, image_.type());
+    cv::circle(imageMask,
+	       cv::Point(imageMask.rows/2, imageMask.cols/2),
+	       squareSize/2,
+	       cv::Scalar(255),
+	       -1);
+
+    cv::bitwise_and(image_, imageMask, image_); // concentrate on the inner circle
 
     if (applyBlur)
       {
@@ -310,54 +328,58 @@ public:
     
     cv::cvtColor(image_, image_, CV_GRAY2RGB);    // Convert back to color
 
-    std::vector<cv::Point2f> movementCenters(contours.size() ); // Initializing the center point vector
+    std::vector<cv::Point2f> specimenCenters(contours.size() ); // Initializing the center point vector
+    std::vector<float> specimenRadius(contours.size() );
     
-    if (movementCenters.size() > 0)
+    if (specimenCenters.size() > 0)
       {
     	//cv::drawContours(image_, contours, -1, INDICATOR_COLOR, 2, 8); // For identifying the contours
 	
-    	float dummy;
 	std::vector<int> specimenCandidate; // holds the index of contours which are candidates for the observed candidate
 	
-    	for (int i=0; i<movementCenters.size(); i++) // go through all found contours and match the wanted hierarchical pattern.
+    	for (int i=0; i<specimenCenters.size(); i++) // go through all found contours and match the wanted hierarchical pattern.
     	  {
-	    if ((hierarchy[i][3] == 2) && // contour is surrounded by 2 contours above (one black circle, ideally)
-		(hierarchy[i][2] ==-1))   // contour doesn't have a child contour
+	    cv::minEnclosingCircle(contours[i],
+				   specimenCenters[i],
+				   specimenRadius[i]);
+	    if(specimenRadius[i] <= SPECIMEN_SIZE_MAX*squareSize &&
+	       specimenRadius[i] >= SPECIMEN_SIZE_MIN*squareSize)
 	      {
 		specimenCandidate.push_back(i);
-		cv::minEnclosingCircle(contours[i], movementCenters[i], dummy);
-		cv::circle(image_, movementCenters[i], 2, INDICATOR_COLOR, -1, 8, 0);
-		// cv::drawContours(image_, contours, -1, INDICATOR_COLOR, 2, 8); // For identifying the contours
+		cv::circle(image_,
+			   specimenCenters[i],
+			   2, INDICATOR_COLOR, -1, 8, 0); // Show specimen center
+		cv::circle(image_,
+			   specimenCenters[i],
+			   SPECIMEN_SIZE_MAX*squareSize,
+			   INDICATOR_COLOR, 2, 8, 0); // Show circle of maximum specimen size
 	      }
-
-	    // std::ostringstream hierarchystring;
-	    // hierarchystring << hierarchy[i][0] << "," << std::endl \
-	    // 		    << hierarchy[i][1] << "," << std::endl \
-	    // 		    << hierarchy[i][2] << "," << std::endl \
-	    // 		    << hierarchy[i][3] << std::endl;
-	    // cv::putText(image_,
-	    // 		hierarchystring.str(),
-	    // 		movementCenters[i],
-	    // 		CV_FONT_HERSHEY_SIMPLEX,
-	    // 		0.4,
-	    // 		INDICATOR_COLOR);
 	  }
 
 	if (specimenCandidate.size() == 1)
 	  {
+	    geometry_msgs::Point position;
+	    position.x = specimenCenters[specimenCandidate.front()].x;
+	    position.y = specimenCenters[specimenCandidate.front()].y;
+	    position.z = 0;
+	    positionPub_.publish(position);
+	    
 	    std::cout << "Single specimen detected at:" << std::endl << "\t" \
-		      << movementCenters[specimenCandidate.front()].x << "," \
-		      << movementCenters[specimenCandidate.front()].y << std::endl;
+		      << position.x << "," \
+		      << position.y << std::endl;
 	  }
 	else if (specimenCandidate.size() > 1)
-	  std::cout << specimenCandidate.size() << "candidates! Try adjusting the threshold value." << std::endl;
+	  std::cout << specimenCandidate.size() << "candidates! Try adjusting the threshold value and/or the minimum specimen size." << std::endl;
 	else
-	  std::cout << "No specimen candidate! Try adjusting the threshold value." << std::endl;
+	  std::cout << "No specimen candidate! Try adjusting the threshold value and/or the maximum specimen size." << std::endl;
       } 
     else
       {
     	std::cout << "No contours found!" << std::endl; 
-      } 
+      }
+
+    sensor_msgs::ImagePtr image_msg = cv_bridge::CvImage(std_msgs::Header(), "rgb8", image_).toImageMsg();
+    imagePub_.publish(image_msg);
   }
 
       void drawPlacement() // TODO: functioni
